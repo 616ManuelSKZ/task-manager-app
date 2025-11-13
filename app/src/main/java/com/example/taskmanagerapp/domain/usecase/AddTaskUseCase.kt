@@ -10,6 +10,6 @@ class AddTaskUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(task: Task) {
         repository.insertTask(task.toEntity())
-        repository.syncTasks() // opcional: sincronizar con la nube
+        repository.syncTasks()
     }
 }

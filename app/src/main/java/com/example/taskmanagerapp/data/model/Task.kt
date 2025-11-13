@@ -5,7 +5,7 @@ data class Task(
     val title: String,
     val description: String,
     val priority: Int,
-    val status: String,          // "pending", "in_progress", "completed"
-    val dueDate: Long,           // Timestamp
+    val status: String,
+    val dueDate: Long? = null,
     val categoryId: String? = null
 )

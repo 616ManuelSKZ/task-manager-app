@@ -13,7 +13,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.taskmanagerapp.data.local.entity.CategoryEntity
 import com.example.taskmanagerapp.data.local.entity.TaskEntity
+import com.example.taskmanagerapp.viewmodel.CategoryViewModel
 import com.example.taskmanagerapp.viewmodel.TaskViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -21,12 +23,22 @@ import com.example.taskmanagerapp.viewmodel.TaskViewModel
 fun TaskDetailScreen(
     task: TaskEntity,
     onBack: () -> Unit,
-    viewModel: TaskViewModel = hiltViewModel()
+    viewModel: TaskViewModel = hiltViewModel(),
+    categoryViewModel: CategoryViewModel = hiltViewModel()
 ) {
+    // Campos editables
     var title by remember { mutableStateOf(task.title) }
     var description by remember { mutableStateOf(task.description) }
     var priority by remember { mutableStateOf(task.priority) }
     var status by remember { mutableStateOf(task.status) }
+    var selectedCategoryId by remember { mutableStateOf(task.categoryId ?: "") }
+
+    // Cargar categorías
+    val categories by categoryViewModel.categories.collectAsState()
+
+    LaunchedEffect(Unit) {
+        categoryViewModel.loadCategories()
+    }
 
     Scaffold(
         topBar = {
@@ -49,7 +61,8 @@ fun TaskDetailScreen(
                             title = title,
                             description = description,
                             priority = priority,
-                            status = status
+                            status = status,
+                            categoryId = selectedCategoryId
                         )
                         viewModel.updateTask(updatedTask)
                         onBack()
@@ -71,6 +84,7 @@ fun TaskDetailScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
@@ -91,22 +105,44 @@ fun TaskDetailScreen(
             Text("Estado:", fontWeight = FontWeight.Bold)
             StatusSelector(status) { status = it }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Text("Categoría:", fontWeight = FontWeight.Bold)
 
-            Button(
-                onClick = {
-                    val updatedTask = task.copy(
-                        title = title,
-                        description = description,
-                        priority = priority,
-                        status = status
-                    )
-                    viewModel.updateTask(updatedTask)
-                    onBack()
-                },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text("Guardar cambios")
+            CategoryDropdown(
+                categories = categories,
+                selectedCategoryId = selectedCategoryId,
+                onSelect = { selectedCategoryId = it }
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
+
+@Composable
+fun CategoryDropdown(
+    categories: List<CategoryEntity>,
+    selectedCategoryId: String,
+    onSelect: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selectedCategory = categories.find { it.id == selectedCategoryId }
+
+    Box {
+        OutlinedButton(onClick = { expanded = true }) {
+            Text(selectedCategory?.name ?: "Seleccionar categoría")
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            categories.forEach { category ->
+                DropdownMenuItem(
+                    text = { Text(category.name) },
+                    onClick = {
+                        onSelect(category.id)
+                        expanded = false
+                    }
+                )
             }
         }
     }

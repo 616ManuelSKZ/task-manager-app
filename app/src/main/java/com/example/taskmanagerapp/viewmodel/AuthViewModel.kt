@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// 🔹 Representa el estado de la UI de autenticación
 data class AuthUiState(
     val isLoading: Boolean = false,
     val user: FirebaseUser? = null,

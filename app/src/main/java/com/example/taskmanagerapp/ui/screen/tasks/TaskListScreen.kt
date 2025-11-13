@@ -29,7 +29,8 @@ fun TaskListScreen(
     viewModel: TaskViewModel = hiltViewModel(),
     onLogout: (() -> Unit)? = null,
     onTaskSelected: ((TaskEntity) -> Unit)? = null,
-    onNavigateToCategories: (() -> Unit)? = null
+    onNavigateToCategories: (() -> Unit)? = null,
+    onAddTask: (() -> Unit)? = null
 ) {
     val tasksWithCategory by viewModel.tasks.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -59,7 +60,7 @@ fun TaskListScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* TODO: Navegar a creación de tarea */ },
+                onClick = { onAddTask?.invoke() },
                 containerColor = MaterialTheme.colorScheme.primary
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Agregar tarea", tint = Color.White)

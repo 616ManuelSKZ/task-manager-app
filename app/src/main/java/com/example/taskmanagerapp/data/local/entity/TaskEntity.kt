@@ -6,13 +6,12 @@ import java.util.UUID
 
 @Entity(tableName = "tasks")
 data class TaskEntity(
-    @PrimaryKey
-    val id: String = UUID.randomUUID().toString(),
+    @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val title: String = "",
     val description: String = "",
-    val priority: Int = 0,
-    val status: String = "pending", // pending, in_progress, completed
-    val dueDate: Long = System.currentTimeMillis(),
+    val status: String = "pending",
+    val priority: Int = 1,
+    val dueDate: Long? = null,
     val categoryId: String? = null,
-    val isSynced: Boolean = false // 🔹 ayuda a saber si ya se subió a Firestore
+    val synced: Boolean = false
 )

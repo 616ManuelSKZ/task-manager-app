@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.example.taskmanagerapp" />
-                  <option name="mobileSdkAppId" value="1:488706523099:android:cdc4493acd05f6415271fe" />
-                  <option name="projectId" value="taskmanager-725dd" />
-                  <option name="projectNumber" value="488706523099" />
+                  <option name="mobileSdkAppId" value="1:552770868849:android:8ea043432da7c8f4976dd0" />
+                  <option name="projectId" value="taskmanagerapp-9296a" />
+                  <option name="projectNumber" value="552770868849" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

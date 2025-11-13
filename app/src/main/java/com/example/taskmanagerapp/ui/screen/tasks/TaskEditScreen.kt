@@ -1,10 +1,14 @@
 package com.example.taskmanagerapp.ui.screen.tasks
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -29,14 +33,25 @@ fun TaskEditScreen(
     var status by remember { mutableStateOf(existingTask?.status ?: "pending") }
     var selectedCategoryId by remember { mutableStateOf(existingTask?.categoryId ?: "") }
 
+    // categorías
     val categories by categoryViewModel.categories.collectAsState()
+
+    // cargar categorías
+    LaunchedEffect(Unit) {
+        categoryViewModel.loadCategories()
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(if (existingTask == null) "Nueva tarea" else "Editar tarea") },
+                navigationIcon = {
+                    IconButton(onClick = onCancel) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.White)
+                    }
+                },
                 actions = {
-                    TextButton(onClick = {
+                    IconButton(onClick = {
                         if (title.isNotBlank()) {
                             val task = existingTask?.copy(
                                 title = title,
@@ -54,15 +69,21 @@ fun TaskEditScreen(
                                 categoryId = selectedCategoryId
                             )
 
-                            if (existingTask == null) taskViewModel.addTask(task)
-                            else taskViewModel.updateTask(task)
+                            if (existingTask == null)
+                                taskViewModel.addTask(task)
+                            else
+                                taskViewModel.updateTask(task)
 
                             onSave()
                         }
                     }) {
-                        Text("Guardar", color = MaterialTheme.colorScheme.onPrimary)
+                        Icon(Icons.Default.Check, contentDescription = "Guardar", tint = Color.White)
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = Color.White
+                )
             )
         }
     ) { padding ->
@@ -72,6 +93,7 @@ fun TaskEditScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
@@ -94,7 +116,11 @@ fun TaskEditScreen(
                 steps = 3
             )
 
+            // ----------------------------
+            //       SELECTOR CATEGORÍA
+            // ----------------------------
             Text("Categoría:", fontWeight = FontWeight.Bold)
+
             CategoryDropdown(
                 categories = categories,
                 selectedCategoryId = selectedCategoryId,
@@ -103,9 +129,7 @@ fun TaskEditScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Button(onClick = onCancel, modifier = Modifier.align(Alignment.CenterHorizontally)) {
-                Text("Cancelar")
-            }
+
         }
     }
 }
@@ -117,12 +141,14 @@ fun CategoryDropdown(
     onSelect: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+
     val selectedCategory = categories.find { it.id == selectedCategoryId }
 
     Box {
         OutlinedButton(onClick = { expanded = true }) {
             Text(selectedCategory?.name ?: "Seleccionar categoría")
         }
+
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }

@@ -1,11 +1,16 @@
 package com.example.taskmanagerapp.data.repository
 
+import android.util.Log
 import com.example.taskmanagerapp.data.local.dao.CategoryDao
 import com.example.taskmanagerapp.data.local.entity.CategoryEntity
 import com.example.taskmanagerapp.data.remote.firebase.CategoryFirebaseSource
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,6 +40,24 @@ class CategoryRepositoryImpl @Inject constructor(
                 val remoteCategories = remoteResult.getOrNull().orEmpty()
                 remoteCategories.forEach { category ->
                     categoryDao.insertCategory(category)
+                }
+            }
+        }
+    }
+
+    fun startRealtimeSync() {
+        remoteSource.observeCategories { remoteCategories ->
+            android.util.Log.d("CategoryRepo", "observeCategories -> received ${remoteCategories.size} items")
+            kotlinx.coroutines.CoroutineScope(Dispatchers.IO).launch {
+                remoteCategories.forEach { cat ->
+                    try {
+                        val idToUse = cat.id.ifEmpty { UUID.randomUUID().toString() }
+                        val normalized = cat.copy(id = idToUse, name = cat.name ?: "", color = cat.color.ifEmpty { "#2196F3" })
+                        categoryDao.insertCategory(normalized)
+                        android.util.Log.d("CategoryRepo", "inserted category ${normalized.id}")
+                    } catch (e: Exception) {
+                        android.util.Log.e("CategoryRepo", "Error insert realtime category: ${e.message}", e)
+                    }
                 }
             }
         }

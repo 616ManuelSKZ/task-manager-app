@@ -31,6 +31,10 @@ fun CategoryListScreen(
     val categories by viewModel.categories.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        viewModel.loadCategories()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(

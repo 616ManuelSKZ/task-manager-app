@@ -10,6 +10,6 @@ class UpdateTaskUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(task: Task) {
         repository.updateTask(task.toEntity())
-        repository.syncTasks() // opcional para mantener sincronización
+        repository.syncTasks()
     }
 }

@@ -5,13 +5,13 @@ import kotlinx.coroutines.flow.Flow
 
 interface TaskRepository {
 
-    // 🔹 Local (Room)
+    // Local (Room)
     fun getAllTasks(): Flow<List<TaskEntity>>
     suspend fun insertTask(task: TaskEntity)
     suspend fun updateTask(task: TaskEntity)
     suspend fun deleteTask(task: TaskEntity)
 
-    // 🔹 Nuevo método: sincronizar Room ↔ Firebase
+    // sincronizar Room ↔ Firebase
     suspend fun syncTasks()
     suspend fun syncTasksToFirebase()
 }

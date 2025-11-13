@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskmanagerapp.data.local.entity.CategoryEntity
 import com.example.taskmanagerapp.data.repository.CategoryRepository
+import com.example.taskmanagerapp.data.repository.CategoryRepositoryImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,10 +23,16 @@ class CategoryViewModel @Inject constructor(
     val isLoading: StateFlow<Boolean> = _isLoading
 
     init {
-        loadCategories()
+        viewModelScope.launch {
+            categoryRepository.syncCategories()
+        }
+
+        if (categoryRepository is CategoryRepositoryImpl) {
+            categoryRepository.startRealtimeSync()
+        }
     }
 
-    // 🔹 Cargar todas las categorías desde Room + sincronizar con Firebase
+    // Cargar todas las categorías desde Room + sincronizar con Firebase
     fun loadCategories() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -34,12 +41,10 @@ class CategoryViewModel @Inject constructor(
             }
             _isLoading.value = false
 
-            // sincroniza categorías con la nube
             categoryRepository.syncCategories()
         }
     }
 
-    // 🔹 Agregar nueva categoría
     fun addCategory(category: CategoryEntity) {
         viewModelScope.launch {
             categoryRepository.insertCategory(category)
@@ -47,7 +52,6 @@ class CategoryViewModel @Inject constructor(
         }
     }
 
-    // 🔹 Eliminar categoría
     fun deleteCategory(category: CategoryEntity) {
         viewModelScope.launch {
             categoryRepository.deleteCategory(category)

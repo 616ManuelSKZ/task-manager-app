@@ -56,7 +56,9 @@ object AppModule {
             context,
             TaskDatabase::class.java,
             "tasks_db"
-        ).build()
+        )
+            .fallbackToDestructiveMigration()
+            .build()
 
     @Provides
     fun provideTaskDao(database: TaskDatabase): TaskDao = database.taskDao()

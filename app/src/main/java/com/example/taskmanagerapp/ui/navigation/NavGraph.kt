@@ -32,7 +32,6 @@ fun NavGraph(
         startDestination = if (authState.user != null) "tasks" else "login"
     ) {
 
-        // 🔹 LOGIN
         composable("login") {
             LoginScreen(
                 onLoginSuccess = {
@@ -46,7 +45,6 @@ fun NavGraph(
             )
         }
 
-        // 🔹 REGISTER
         composable("register") {
             RegisterScreen(
                 onRegisterSuccess = {
@@ -62,7 +60,6 @@ fun NavGraph(
             )
         }
 
-        // 🔹 LISTA DE TAREAS
         composable("tasks") {
             TaskListScreen(
                 onLogout = { authViewModel.logout() },
@@ -72,11 +69,13 @@ fun NavGraph(
                 },
                 onNavigateToCategories = {
                     navController.navigate("categories")
+                },
+                onAddTask = {  // 👈 AÑADE ESTA LÍNEA
+                    navController.navigate("taskEdit")
                 }
             )
         }
 
-        // 🔹 DETALLE DE TAREA
         composable(
             route = "taskDetail/{taskJson}",
             arguments = listOf(navArgument("taskJson") { type = NavType.StringType })
@@ -89,7 +88,6 @@ fun NavGraph(
             )
         }
 
-        // 🔹 CREAR / EDITAR TAREA
         composable("taskEdit") {
             TaskEditScreen(
                 onSave = { navController.popBackStack() },
@@ -97,12 +95,10 @@ fun NavGraph(
             )
         }
 
-        // 🔹 CATEGORÍAS
         composable("categories") {
             CategoryListScreen(onBack = { navController.popBackStack() })
         }
 
-        // 🔹 PERFIL DE USUARIO
         composable("profile") {
             ProfileScreen()
         }

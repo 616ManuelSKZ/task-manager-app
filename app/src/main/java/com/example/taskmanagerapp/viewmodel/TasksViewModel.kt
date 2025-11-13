@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.taskmanagerapp.data.local.entity.TaskEntity
 import com.example.taskmanagerapp.data.model.TaskWithCategory
 import com.example.taskmanagerapp.data.repository.CategoryRepository
+import com.example.taskmanagerapp.data.repository.CategoryRepositoryImpl
 import com.example.taskmanagerapp.data.repository.TaskRepository
+import com.example.taskmanagerapp.data.repository.TaskRepositoryImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -24,10 +26,32 @@ class TaskViewModel @Inject constructor(
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     init {
+        viewModelScope.launch {
+
+            taskRepository.syncTasks()
+        }
+
+        if (taskRepository is TaskRepositoryImpl) {
+            taskRepository.startRealtimeSync()
+        }
+
+        if (categoryRepository is CategoryRepositoryImpl) {
+
+            categoryRepository.startRealtimeSync()
+
+            viewModelScope.launch {
+                try {
+                    categoryRepository.syncCategories()
+                } catch (e: Exception) {
+                    // log para depuración
+                    android.util.Log.e("TaskVM", "syncCategories fallo: ${e.message}", e)
+                }
+            }
+        }
+
         loadTasks()
     }
 
-    // 🔹 Cargar tareas locales y categorías
     fun loadTasks() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -47,7 +71,6 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    // 🔹 Agregar nueva tarea
     fun addTask(task: TaskEntity) {
         viewModelScope.launch {
             taskRepository.insertTask(task)
@@ -55,7 +78,6 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    // 🔹 Actualizar tarea existente
     fun updateTask(task: TaskEntity) {
         viewModelScope.launch {
             taskRepository.updateTask(task)
@@ -63,7 +85,6 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    // 🔹 Eliminar tarea
     fun deleteTask(task: TaskEntity) {
         viewModelScope.launch {
             taskRepository.deleteTask(task)
@@ -71,7 +92,6 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    // 🔹 Cambiar estado de la tarea (pendiente → en progreso → completada)
     fun toggleStatus(task: TaskEntity) {
         val newStatus = when (task.status) {
             "pending" -> "in_progress"
@@ -82,7 +102,6 @@ class TaskViewModel @Inject constructor(
         updateTask(updatedTask)
     }
 
-    // 🔹 Crear una tarea vacía temporal (usado desde el FAB)
     fun createEmptyTask() {
         val emptyTask = TaskEntity(
             title = "Nueva tarea",
