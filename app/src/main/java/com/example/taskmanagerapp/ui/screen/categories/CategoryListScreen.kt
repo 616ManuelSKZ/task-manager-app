@@ -36,20 +36,6 @@ fun CategoryListScreen(
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Categorías") },
-                navigationIcon = {
-                    IconButton(onClick = { onBack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.White)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = Color.White
-                )
-            )
-        },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showDialog = true },
@@ -61,9 +47,13 @@ fun CategoryListScreen(
     ) { padding ->
         Column(
             modifier = Modifier
-                .padding(padding)
+                .padding(
+                    start = 4.dp,
+                    end = 4.dp,
+                    top = 16.dp,                       // ❗ Quitamos espacio del TopBar
+                    bottom = padding.calculateBottomPadding()   // ✔ dejamos solo bottom
+                )
                 .fillMaxSize()
-                .padding(16.dp)
         ) {
             if (categories.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

@@ -1,19 +1,17 @@
 package com.example.taskmanagerapp.ui.screen.tasks
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.taskmanagerapp.data.local.entity.CategoryEntity
 import com.example.taskmanagerapp.data.local.entity.TaskEntity
+import com.example.taskmanagerapp.ui.components.AppTopBar
+import com.example.taskmanagerapp.ui.components.DatePickerCompose
 import com.example.taskmanagerapp.viewmodel.CategoryViewModel
 import com.example.taskmanagerapp.viewmodel.TaskViewModel
 import java.util.*
@@ -32,64 +30,26 @@ fun TaskEditScreen(
     var priority by remember { mutableStateOf(existingTask?.priority ?: 1) }
     var status by remember { mutableStateOf(existingTask?.status ?: "pending") }
     var selectedCategoryId by remember { mutableStateOf(existingTask?.categoryId ?: "") }
+    var dueDate by remember { mutableStateOf(existingTask?.dueDate) }
 
-    // categorías
     val categories by categoryViewModel.categories.collectAsState()
 
-    // cargar categorías
     LaunchedEffect(Unit) {
         categoryViewModel.loadCategories()
     }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(if (existingTask == null) "Nueva tarea" else "Editar tarea") },
-                navigationIcon = {
-                    IconButton(onClick = onCancel) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.White)
-                    }
-                },
-                actions = {
-                    IconButton(onClick = {
-                        if (title.isNotBlank()) {
-                            val task = existingTask?.copy(
-                                title = title,
-                                description = description,
-                                priority = priority,
-                                status = status,
-                                categoryId = selectedCategoryId
-                            ) ?: TaskEntity(
-                                id = UUID.randomUUID().toString(),
-                                title = title,
-                                description = description,
-                                priority = priority,
-                                status = status,
-                                dueDate = System.currentTimeMillis(),
-                                categoryId = selectedCategoryId
-                            )
-
-                            if (existingTask == null)
-                                taskViewModel.addTask(task)
-                            else
-                                taskViewModel.updateTask(task)
-
-                            onSave()
-                        }
-                    }) {
-                        Icon(Icons.Default.Check, contentDescription = "Guardar", tint = Color.White)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = Color.White
-                )
+            AppTopBar(
+                title = "Nueva tarea",
+                onBack = onCancel
             )
         }
     ) { padding ->
+
         Column(
             modifier = Modifier
-                .padding(padding)
+                .padding(padding)   // <-- Aquí está el problema
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -105,7 +65,8 @@ fun TaskEditScreen(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Descripción") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3,
             )
 
             Text("Prioridad: $priority", fontWeight = FontWeight.Bold)
@@ -116,20 +77,63 @@ fun TaskEditScreen(
                 steps = 3
             )
 
-            // ----------------------------
-            //       SELECTOR CATEGORÍA
-            // ----------------------------
             Text("Categoría:", fontWeight = FontWeight.Bold)
-
             CategoryDropdown(
                 categories = categories,
                 selectedCategoryId = selectedCategoryId,
                 onSelect = { selectedCategoryId = it }
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Text("Fecha de vencimiento:", fontWeight = FontWeight.Bold)
+            DatePickerCompose(
+                selectedDate = dueDate,
+                onDateSelected = { dueDate = it }
+            )
 
+            Spacer(modifier = Modifier.height(20.dp))
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+
+                OutlinedButton(onClick = onCancel) {
+                    Text("Cancelar")
+                }
+
+                Button(
+                    onClick = {
+                        if (title.isNotBlank()) {
+
+                            val task = existingTask?.copy(
+                                title = title,
+                                description = description,
+                                priority = priority,
+                                status = status,
+                                categoryId = selectedCategoryId,
+                                dueDate = dueDate
+                            ) ?: TaskEntity(
+                                id = UUID.randomUUID().toString(),
+                                title = title,
+                                description = description,
+                                priority = priority,
+                                status = status,
+                                categoryId = selectedCategoryId,
+                                dueDate = dueDate ?: System.currentTimeMillis()
+                            )
+
+                            if (existingTask == null)
+                                taskViewModel.addTask(task)
+                            else
+                                taskViewModel.updateTask(task)
+
+                            onSave()
+                        }
+                    }
+                ) {
+                    Text("Guardar")
+                }
+            }
         }
     }
 }
@@ -141,7 +145,6 @@ fun CategoryDropdown(
     onSelect: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-
     val selectedCategory = categories.find { it.id == selectedCategoryId }
 
     Box {

@@ -14,6 +14,7 @@ fun AppBottomBar(
     onNavigate: (String) -> Unit
 ) {
     NavigationBar(containerColor = MaterialTheme.colorScheme.primary) {
+
         NavigationBarItem(
             icon = { Icon(Icons.Default.Home, contentDescription = "Tareas") },
             label = { Text("Tareas") },
@@ -22,6 +23,8 @@ fun AppBottomBar(
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = Color.White,
                 unselectedIconColor = Color.LightGray,
+                selectedTextColor = Color.White,
+                unselectedTextColor = Color.LightGray,
                 indicatorColor = MaterialTheme.colorScheme.primary
             )
         )
@@ -34,6 +37,8 @@ fun AppBottomBar(
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = Color.White,
                 unselectedIconColor = Color.LightGray,
+                selectedTextColor = Color.White,
+                unselectedTextColor = Color.LightGray,
                 indicatorColor = MaterialTheme.colorScheme.primary
             )
         )
@@ -46,8 +51,11 @@ fun AppBottomBar(
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = Color.White,
                 unselectedIconColor = Color.LightGray,
+                selectedTextColor = Color.White,
+                unselectedTextColor = Color.LightGray,
                 indicatorColor = MaterialTheme.colorScheme.primary
             )
         )
     }
 }
+

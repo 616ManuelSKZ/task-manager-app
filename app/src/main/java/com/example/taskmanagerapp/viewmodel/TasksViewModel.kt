@@ -8,6 +8,7 @@ import com.example.taskmanagerapp.data.repository.CategoryRepository
 import com.example.taskmanagerapp.data.repository.CategoryRepositoryImpl
 import com.example.taskmanagerapp.data.repository.TaskRepository
 import com.example.taskmanagerapp.data.repository.TaskRepositoryImpl
+import com.example.taskmanagerapp.util.getDaysUntil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -65,7 +66,16 @@ class TaskViewModel @Inject constructor(
                     TaskWithCategory(task, category)
                 }
             }.collect { combined ->
-                _tasks.value = combined
+                _tasks.value = combined.sortedWith(
+                    compareBy<TaskWithCategory> {
+                        val days = getDaysUntil(it.task.dueDate)
+                        when {
+                            days == null -> 1000
+                            days < 0 -> -100
+                            else -> days
+                        }
+                    }
+                )
                 _isLoading.value = false
             }
         }

@@ -21,21 +21,16 @@ fun ProfileScreen(
 ) {
     val authState by viewModel.authState.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Perfil de usuario") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = Color.White
-                )
-            )
-        }
-    ) { padding ->
+    Scaffold() { padding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
+                .padding(
+                    start = 0.dp,
+                    end = 0.dp,
+                    top = 0.dp,
+                    bottom = padding.calculateBottomPadding()
+                ),
             contentAlignment = Alignment.Center
         ) {
             authState.user?.let { user ->
@@ -54,12 +49,6 @@ fun ProfileScreen(
                         text = user.email ?: "Sin correo",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
-                    )
-
-                    Text(
-                        text = "UID: ${user.uid}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))

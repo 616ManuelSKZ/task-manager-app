@@ -15,6 +15,7 @@ private val LightColorScheme = lightColorScheme(
     surface = Color.White
 )
 
+// Desabilitado por cuestion de tiempo
 private val DarkColorScheme = darkColorScheme(
     primary = Purple40,
     secondary = PurpleGrey40,

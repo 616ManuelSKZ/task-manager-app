@@ -2,7 +2,6 @@ package com.example.taskmanagerapp.ui.screen.tasks
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
@@ -15,6 +14,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.taskmanagerapp.data.local.entity.CategoryEntity
 import com.example.taskmanagerapp.data.local.entity.TaskEntity
+import com.example.taskmanagerapp.ui.components.AppTopBar
+import com.example.taskmanagerapp.ui.components.DatePickerCompose
 import com.example.taskmanagerapp.viewmodel.CategoryViewModel
 import com.example.taskmanagerapp.viewmodel.TaskViewModel
 
@@ -26,14 +27,13 @@ fun TaskDetailScreen(
     viewModel: TaskViewModel = hiltViewModel(),
     categoryViewModel: CategoryViewModel = hiltViewModel()
 ) {
-    // Campos editables
     var title by remember { mutableStateOf(task.title) }
     var description by remember { mutableStateOf(task.description) }
     var priority by remember { mutableStateOf(task.priority) }
     var status by remember { mutableStateOf(task.status) }
     var selectedCategoryId by remember { mutableStateOf(task.categoryId ?: "") }
+    var dueDate by remember { mutableStateOf(task.dueDate) }
 
-    // Cargar categorías
     val categories by categoryViewModel.categories.collectAsState()
 
     LaunchedEffect(Unit) {
@@ -42,13 +42,9 @@ fun TaskDetailScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Editar tarea") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.White)
-                    }
-                },
+            AppTopBar(
+                title = "Editar tarea",
+                onBack = onBack,
                 actions = {
                     IconButton(onClick = {
                         viewModel.deleteTask(task)
@@ -57,34 +53,30 @@ fun TaskDetailScreen(
                         Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color.White)
                     }
                     IconButton(onClick = {
-                        val updatedTask = task.copy(
+                        val updated = task.copy(
                             title = title,
                             description = description,
                             priority = priority,
                             status = status,
-                            categoryId = selectedCategoryId
+                            categoryId = selectedCategoryId,
+                            dueDate = dueDate
                         )
-                        viewModel.updateTask(updatedTask)
+                        viewModel.updateTask(updated)
                         onBack()
                     }) {
                         Icon(Icons.Default.Save, contentDescription = "Guardar", tint = Color.White)
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = Color.White
-                )
+                }
             )
         }
     ) { padding ->
+
         Column(
             modifier = Modifier
-                .fillMaxSize()
                 .padding(padding)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
@@ -96,7 +88,8 @@ fun TaskDetailScreen(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Descripción") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                maxLines = 3,
             )
 
             Text("Prioridad:", fontWeight = FontWeight.Bold)
@@ -106,11 +99,16 @@ fun TaskDetailScreen(
             StatusSelector(status) { status = it }
 
             Text("Categoría:", fontWeight = FontWeight.Bold)
-
             CategoryDropdown(
                 categories = categories,
                 selectedCategoryId = selectedCategoryId,
                 onSelect = { selectedCategoryId = it }
+            )
+
+            Text("Fecha de vencimiento:", fontWeight = FontWeight.Bold)
+            DatePickerCompose(
+                selectedDate = dueDate,
+                onDateSelected = { dueDate = it }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -131,6 +129,7 @@ fun CategoryDropdown(
         OutlinedButton(onClick = { expanded = true }) {
             Text(selectedCategory?.name ?: "Seleccionar categoría")
         }
+
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
@@ -155,17 +154,9 @@ fun PrioritySelector(currentPriority: Int, onPriorityChange: (Int) -> Unit) {
             value = currentPriority.toFloat(),
             onValueChange = { onPriorityChange(it.toInt()) },
             valueRange = 1f..5f,
-            steps = 3,
-            colors = SliderDefaults.colors(
-                thumbColor = MaterialTheme.colorScheme.primary,
-                activeTrackColor = MaterialTheme.colorScheme.primary
-            )
+            steps = 3
         )
-        Text(
-            text = "Nivel: $currentPriority",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        Text("Nivel: $currentPriority")
     }
 }
 

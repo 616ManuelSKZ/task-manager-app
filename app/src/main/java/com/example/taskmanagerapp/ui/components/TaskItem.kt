@@ -2,9 +2,21 @@ package com.example.taskmanagerapp.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,6 +26,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.taskmanagerapp.data.local.entity.CategoryEntity
 import com.example.taskmanagerapp.data.local.entity.TaskEntity
+import com.example.taskmanagerapp.util.getDaysUntil
+import com.example.taskmanagerapp.util.getDeadlineColor
+import com.example.taskmanagerapp.util.getDeadlineLabel
 
 @Composable
 fun TaskItem(
@@ -31,39 +46,52 @@ fun TaskItem(
         elevation = CardDefaults.cardElevation(2.dp),
         colors = CardDefaults.cardColors(
             containerColor = when (task.status) {
-                "completed" -> Color(0xFFE8F5E9)
-                "in_progress" -> Color(0xFFFFF8E1)
-                else -> Color(0xFFFFEBEE)
+                "completed" -> Color(0xFFF1F8E9)       // verde pastel
+                "in_progress" -> Color(0xFFFFF3E0)     // naranja pastel
+                else -> Color(0xFFFDECEC)              // rojo pastel
             }
         )
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            // 🔹 Título de la tarea
             Text(
                 text = task.title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
 
-            // 🔹 Descripción (si existe)
             if (task.description.isNotBlank()) {
                 Text(
                     text = task.description,
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
+                task.dueDate?.let {
+                    val daysLeft = getDaysUntil(task.dueDate)
+                    val deadlineColor = getDeadlineColor(daysLeft)
+                    val deadlineLabel = getDeadlineLabel(daysLeft)
+
+                    Text(
+                        text = deadlineLabel,
+                        color = deadlineColor,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
 
-            // 🔹 Categoría (color + nombre)
+            // 🔹 Mostrar categoría
             category?.let {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = 4.dp)
+                ) {
                     Box(
                         modifier = Modifier
                             .size(10.dp)
-                            .clip(RoundedCornerShape(50))
+                            .clip(MaterialTheme.shapes.small)
                             .background(Color(android.graphics.Color.parseColor(it.color)))
                     )
                     Spacer(modifier = Modifier.width(6.dp))
@@ -75,13 +103,11 @@ fun TaskItem(
                 }
             }
 
-            Divider(modifier = Modifier.padding(vertical = 4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
-            // 🔹 Estado y acciones
             Row(
-                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
                     text = when (task.status) {
@@ -98,7 +124,7 @@ fun TaskItem(
                     fontWeight = FontWeight.Medium
                 )
 
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row {
                     TextButton(onClick = onToggleStatus) {
                         Text("Cambiar estado")
                     }

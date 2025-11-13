@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.taskmanagerapp.data.local.entity.TaskEntity
+import com.example.taskmanagerapp.ui.components.MainScaffold
 import com.example.taskmanagerapp.ui.screen.auth.LoginScreen
 import com.example.taskmanagerapp.ui.screen.auth.RegisterScreen
 import com.example.taskmanagerapp.ui.screen.categories.CategoryListScreen
@@ -32,6 +33,7 @@ fun NavGraph(
         startDestination = if (authState.user != null) "tasks" else "login"
     ) {
 
+        // ------------------ AUTH ------------------
         composable("login") {
             LoginScreen(
                 onLoginSuccess = {
@@ -39,9 +41,7 @@ fun NavGraph(
                         popUpTo("login") { inclusive = true }
                     }
                 },
-                onNavigateToRegister = {
-                    navController.navigate("register")
-                }
+                onNavigateToRegister = { navController.navigate("register") }
             )
         }
 
@@ -60,28 +60,44 @@ fun NavGraph(
             )
         }
 
+        // ------------------ MAIN SCREENS (con BottomBar) ------------------
         composable("tasks") {
-            TaskListScreen(
-                onLogout = { authViewModel.logout() },
-                onTaskSelected = { selectedTask ->
-                    val json = Gson().toJson(selectedTask)
-                    navController.navigate("taskDetail/$json")
-                },
-                onNavigateToCategories = {
-                    navController.navigate("categories")
-                },
-                onAddTask = {  // 👈 AÑADE ESTA LÍNEA
-                    navController.navigate("taskEdit")
-                }
-            )
+            MainScaffold(navController) {
+                TaskListScreen(
+                    onLogout = { authViewModel.logout() },
+                    onTaskSelected = { selectedTask ->
+                        val json = Gson().toJson(selectedTask)
+                        navController.navigate("taskDetail/$json")
+                    },
+                    onNavigateToCategories = {
+                        navController.navigate("categories")
+                    },
+                    onAddTask = {
+                        navController.navigate("taskEdit")
+                    }
+                )
+            }
         }
 
+        composable("categories") {
+            MainScaffold(navController) {
+                CategoryListScreen(onBack = { navController.popBackStack() })
+            }
+        }
+
+        composable("profile") {
+            MainScaffold(navController) {
+                ProfileScreen()
+            }
+        }
+
+        // ------------------ SCREENS SIN BottomBar ------------------
         composable(
             route = "taskDetail/{taskJson}",
             arguments = listOf(navArgument("taskJson") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val taskJson = backStackEntry.arguments?.getString("taskJson")
-            val task = Gson().fromJson(taskJson, TaskEntity::class.java)
+        ) { entry ->
+            val task = Gson().fromJson(entry.arguments?.getString("taskJson"), TaskEntity::class.java)
+
             TaskDetailScreen(
                 task = task,
                 onBack = { navController.popBackStack() }
@@ -93,14 +109,6 @@ fun NavGraph(
                 onSave = { navController.popBackStack() },
                 onCancel = { navController.popBackStack() }
             )
-        }
-
-        composable("categories") {
-            CategoryListScreen(onBack = { navController.popBackStack() })
-        }
-
-        composable("profile") {
-            ProfileScreen()
         }
     }
 }
